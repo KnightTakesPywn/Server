@@ -1,3 +1,4 @@
+## Credit to: https://channels.readthedocs.io/en/latest/tutorial/index.html
 from django.shortcuts import render
 
 def index(request):

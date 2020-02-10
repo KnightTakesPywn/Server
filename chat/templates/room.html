@@ -1,3 +1,4 @@
+<!-- Credit To: https://channels.readthedocs.io/en/latest/tutorial/index.html -->
 <!-- chat/templates/chat/room.html -->
 <!DOCTYPE html>
 <html>
@@ -8,6 +9,7 @@
   <body>
     <textarea id="chat-log" cols="100" rows="20"></textarea><br/>
     <input id="chat-message-input" type="text" size="100"/><br/>
+    <input id="chat-message-username" type="text" size="100" required=true/><br/>
     <input id="chat-message-submit" type="button" value="Send"/>
   </body>
   <script>
@@ -20,7 +22,12 @@
     chatSocket.onmessage = function(e) {
       var data = JSON.parse(e.data);
       var message = data['message'];
-      document.querySelector('#chat-log').value += (message + '\n');
+      var history = data['history'];
+
+      document.querySelector('#chat-log').value = '';
+      history.reverse().forEach(sentMessage => {
+        document.querySelector('#chat-log').value += (sentMessage + '\n');
+      });
     };
 
     chatSocket.onclose = function(e) {
@@ -37,8 +44,11 @@
     document.querySelector('#chat-message-submit').onclick = function(e) {
       var messageInputDom = document.querySelector('#chat-message-input');
       var message = messageInputDom.value;
+      var userInputDom = document.querySelector('#chat-message-username');
+      var user = userInputDom.value;
       chatSocket.send(JSON.stringify({
-          'message': message
+          'message': message,
+          'user': user
       }));
 
       messageInputDom.value = '';

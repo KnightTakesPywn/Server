@@ -1,5 +1,7 @@
 # Server
-
+## Chat Room
+Feature was built fallowing this tutorial:
+[Chat Room](https://channels.readthedocs.io/en/latest/tutorial/index.html)
 
 ## Docker Commands Needed:
 `docker pull redis`
