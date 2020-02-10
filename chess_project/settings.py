@@ -39,6 +39,12 @@ ALLOWED_HOSTS = env.str('ALLOWED_HOSTS').split(',')
 # Application definition
 
 INSTALLED_APPS = [
+  ## Third Party
+  'channels',
+
+  ## Test Channel Apps
+  'chat',
+
   'django.contrib.admin',
   'django.contrib.auth',
   'django.contrib.contenttypes',
@@ -46,8 +52,6 @@ INSTALLED_APPS = [
   'django.contrib.messages',
   'django.contrib.staticfiles',
 
-  ## Third Party
-  'channels',
 
   ## Local
   'chess_app.apps.ChessAppConfig',
@@ -135,3 +139,11 @@ STATIC_URL = '/static/'
 
 ## Controls the Channel Routing
 ASGI_APPLICATION  = "chess_project.routing.application"
+CHANNEL_LAYERS = {
+'default': {
+    'BACKEND': 'channels_redis.core.RedisChannelLayer',
+    'CONFIG': {
+      "hosts": [('127.0.0.1', 6379)],
+    },
+  },
+}

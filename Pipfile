@@ -10,6 +10,7 @@ pylint = "*"
 django = "*"
 django-environ = "*"
 channels = "*"
+channels-redis = "*"
 
 [requires]
 python_version = "3.6"
