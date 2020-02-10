@@ -16,6 +16,14 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
+# Setup the .env reader
+import environ
+env = environ.Env(
+  DEBUG=(bool, False)
+)
+environ.Env.read_env()
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -31,12 +39,17 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+  'django.contrib.admin',
+  'django.contrib.auth',
+  'django.contrib.contenttypes',
+  'django.contrib.sessions',
+  'django.contrib.messages',
+  'django.contrib.staticfiles',
+
+  ## Third Party
+  'channels',
+
+  ## Local
 ]
 
 MIDDLEWARE = [
@@ -49,7 +62,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'chess.urls'
+ROOT_URLCONF = 'chess_project.urls'
 
 TEMPLATES = [
     {
@@ -67,7 +80,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'chess.wsgi.application'
+WSGI_APPLICATION = 'chess_project.wsgi.application'
 
 
 # Database
@@ -118,3 +131,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+## Controls the Channel Routing
+ASGI_APPLICATION  = "chess_project.routing.application"
