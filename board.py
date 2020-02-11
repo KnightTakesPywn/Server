@@ -16,8 +16,8 @@ class Board:
           color = -1
           row1=1
           row2 = 0
-        self.matrix[row1][i] = Pawn(color,row1,i)
-        self.matrix[row2][i] = pieces[i](color,row2,i)
+        self.matrix[row1][i] = Pawn(color,row1,i,self)
+        self.matrix[row2][i] = pieces[i](color,row2,i,self)
     self.white_king=self.matrix[7][4]
     self.black_king=self.matrix[0][4]
 
@@ -46,12 +46,12 @@ class Board:
       row = move[1]
       color = move[2]
       if move[0] == "0-0": #kingside
-        squares = (King(color,row,4),0,0,Rook(color,row,7))
+        squares = (King(color,row,4,self),0,0,Rook(color,row,7,self))
         def col_func (j): ## a quick helper function to grab the appropriate columns on the matrix
           return 4+j
         rangee=4
       else:
-        squares =(King(color,row,4),0,0,0,Rook(color,row,0)) #queenside
+        squares =(King(color,row,4,self),0,0,0,Rook(color,row,0,self)) #queenside
         def col_func(j):
           return 4-j
         rangee=5

@@ -1,10 +1,12 @@
 class Piece:
-  def __init__(self,color, val, row=None,column=None):
+  def __init__(self,color, val, row,column, board_obj):
     """White pieces have a color of 1, black have a color of -1.  Val of 1 for pawn, 3 for knight, 4 for bishop, 5 for rook, 8 for king and 9 for queen.   Row and Column are the piece's position in the board matrix (bottom left being 7,0)"""
     self.val = val
     self.color = color
     self.row=row
     self.column=column
+    board_obj.matrix[row][column] = self
+
 
   def __str__(self):
     s=("w", "b")[self.color is not 1]
@@ -92,8 +94,8 @@ class Piece:
     return True
 
 class Pawn(Piece):
-  def __init__ (self, color, row = None, column = None):
-    super().__init__(color,1,row,column)
+  def __init__ (self, color, row, column, board_obj):
+    super().__init__(color,1,row,column,board_obj)
 
   def _move(self,row,column, board):
     legal_move = False
@@ -111,8 +113,8 @@ class Pawn(Piece):
     return legal_move
 
 class Knight(Piece):
-  def __init__ (self, color, row = None, column = None):
-    super().__init__(color,3,row,column)
+  def __init__ (self, color, row, column, board_obj):
+    super().__init__(color,3,row,column,board_obj)
 
   def _move(self,row,column,board):
     legal_move = False
@@ -122,8 +124,8 @@ class Knight(Piece):
     return legal_move
 
 class Rook(Piece):
-  def __init__ (self, color, row = None, column = None):
-    super().__init__(color,5,row,column)
+  def __init__ (self, color, row, column, board_obj):
+    super().__init__(color,5,row,column,board_obj)
     self.moved = False
 
   def _move(self,row,column,board):
@@ -136,8 +138,8 @@ class Rook(Piece):
     return legal_move
 
 class  Bishop(Piece):
-  def __init__ (self, color, row = None, column = None):
-    super().__init__(color,4,row,column)
+  def __init__ (self, color, row, column, board_obj):
+    super().__init__(color,4,row,column,board_obj)
 
   def _move(self,row,column,board):
     legal_move=False
@@ -147,8 +149,8 @@ class  Bishop(Piece):
     return legal_move
 
 class Queen(Piece):
-  def __init__(self,color,row=None,column = None):
-    super().__init__(color,9,row,column)
+  def __init__(self,color,row,column,board_obj):
+    super().__init__(color,9,row,column,board_obj)
 
   def _move(self,row,column,board):  ##copy-paste of logic for rook and Bishop
     legal_move=False
@@ -162,8 +164,8 @@ class Queen(Piece):
     return legal_move
 
 class King(Piece):
-  def __init__(self,color,row=None,column = None):
-    super().__init__(color,8,row,column)
+  def __init__(self,color,row,column,board_obj):
+    super().__init__(color,8,row,column,board_obj)
     self.moved = False
 
   def _move(self,row,column,board):
