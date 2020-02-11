@@ -3,6 +3,7 @@ from django.urls import path
 
 urlpatterns = [
 
+
   # Path to the game view
   # path('game/', )
 ]
