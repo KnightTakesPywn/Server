@@ -5,9 +5,9 @@ from .board import Board
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
-###################################
-## Run When a Connection is Made ##
-###################################
+  ###################################
+  ## Run When a Connection is Made ##
+  ###################################
 
   ## Runs when a user has connected to the game server
   async def connect(self):
@@ -33,9 +33,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
       }
     )
 
-##########################
-## User Leaves the Room ##
-##########################
+  ##########################
+  ## User Leaves the Room ##
+  ##########################
 
   async def disconnect(self, close_code):
     # Leave room group
@@ -44,9 +44,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
       self.channel_name
     )
 
-####################
-## Helper Methods ##
-####################
+  ####################
+  ## Helper Methods ##
+  ####################
 
   async def create_game(self):
     self.gameBoard = Board()
@@ -54,9 +54,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
 
-#################################
-## Message Receive From Client ##
-#################################
+  #################################
+  ## Message Receive From Client ##
+  #################################
 
   # Receive message from WebSocket
   async def receive(self, text_data):
@@ -75,9 +75,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
       }
     )
 
-###############################
-## Different Receive Actions ##
-###############################
+  ###############################
+  ## Different Receive Actions ##
+  ###############################
 
   async def handle_move(self, data):
     valid_move = self.gameBoard.move(data.start,data.end)
@@ -85,21 +85,29 @@ class ChatConsumer(AsyncWebsocketConsumer):
       await self.channel_layer.group_send(
         self.room_group_name,
         {
-          "type": 'send_board'
+          "type": 'update_board'
+          "board": self.gameBoard
         }
       )
 
 
-
-####################################
-## Different Server Message Sends ##
-####################################
+  ####################################
+  ## Different Server Message Sends ##
+  ####################################
 
   # Receive message from room group
   async def send_board(self, event):
+    turn = ("white","black")[self.gameBoard.player_to_move==-1]
     await self.send(text_data=json.dumps({
       'type':'gameState',
-
-      'turn':'white', # self.board.get_turn()
-      'board':self.gameBoard.objectify() # self.board.objectify()
+      'turn': turn,
+      'board':self.gameBoard.objectify()
     }))
+
+  ####################################
+  ###  Group updates game board ######
+  ####################################
+
+  async def update_board(self,event):
+    self.gameBoard = event.board
+    self.send_board(event)
