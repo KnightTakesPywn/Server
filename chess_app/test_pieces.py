@@ -1,9 +1,10 @@
-import pytest
-from board import Board
-from pieces import *
 import sys, os
 myPath = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, myPath + '/./')
+import pytest
+from board import Board
+from pieces import *
+
 
 
 def test_piece_creation(board):
