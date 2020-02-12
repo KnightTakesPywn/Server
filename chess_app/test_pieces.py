@@ -1,6 +1,9 @@
 import pytest
 from board import Board
 from pieces import *
+import sys, os
+myPath = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, myPath + '/./')
 
 
 def test_piece_creation(board):
@@ -364,6 +367,95 @@ def test_en_passant(board):
   assert 0 == b[4][1]
   assert 0 == b[4][0]
   assert isinstance(b[5][0],Pawn)
+
+def test_kingside_castling_legal(board):
+  b = board.matrix
+  King(1,7,4,board)
+  King(-1,0,4,board)
+  Rook(1,7,7,board)
+  Rook(-1,0,7,board)
+  Pawn(1,6,5,board)  #otherwise white's rook will make black castling illegal
+
+  board.move(7,4,7,6)
+  board.move(0,4,0,6)
+
+  assert 0 == b[7][4]
+  assert 0 == b[0][4]
+  assert 0 == b[7][7]
+  assert 0 == b[0][7]
+  assert isinstance(b[7][6],King)
+  assert isinstance(b[0][6],King)
+  assert isinstance(b[7][5],Rook)
+  assert isinstance(b[0][5],Rook)
+
+def test_qside_castling_legal(board):
+  b = board.matrix
+  King(1,7,4,board)
+  King(-1,0,4,board)
+  Rook(1,7,0,board)
+  Rook(-1,0,0,board)
+  Pawn(1,6,3,board)
+
+  board.move(7,4,7,2)
+  board.move(0,4,0,2)
+
+  assert 0 == b[7][4]
+  assert 0 == b[0][4]
+  assert 0 == b[7][0]
+  assert 0 == b[0][0]
+  assert isinstance(b[7][2],King)
+  assert isinstance(b[0][2],King)
+  assert isinstance(b[7][3],Rook)
+  assert isinstance(b[0][3],Rook)
+
+def test_castling_illegal(board):
+  b = board.matrix
+  King(1,7,4,board)
+  Rook(1,7,7,board)
+  Knight(-1,5,4,board)
+  board.move(7,4,7,6)
+  assert b[7][6]==0
+  b[5][4]=0
+  Rook(-1,2,4,board)
+  board.move(7,4,7,6)
+  assert b[7][6]==0
+
+
+  board.move(7,4,7,5)
+  board.player_to_move=1
+  board.move(7,5,7,4)
+  board.player_to_move=1
+  board.move(7,4,7,6)
+  assert b[7][6]==0
+
+  b[7][4].moved=False
+  board.move(7,7,5,7)
+  board.player_to_move=1
+  board.move(5,7,7,7)
+  board.player_to_move=1
+  assert b[7][6]==0
+
+def test_undo_move():
+  board=Board()
+  b=board.matrix
+
+  board.move(6,4,4,4)
+  board.move(1,4,3,4)
+  board.move(7,6,5,5)
+  board.move(0,1,2,2)
+  board.move(7,5,4,2)
+  board.move(0,6,2,5)
+  board.move(7,4,7,6)
+
+  assert board.player_to_move == -1
+  board.undo_move()
+  assert b[7][6]==0
+  assert b [7][5]==0
+  assert board.player_to_move == 1
+  board.undo_move()
+  assert b[2][5] ==0
+  assert board.player_to_move ==-1
+  assert isinstance(b[0][6],Knight)
 
 @pytest.fixture()
 def board():

@@ -60,9 +60,9 @@ class Board:
     else:  #  If the last move wasn't castling, undo the piece move, and if it captured something, put the captured piece back on the board.
       self.matrix[move[0]][move[1]] = self.matrix[move[2]][move[3]]
       self.matrix[move[2]][move[3]] = move[4]
-    if move[5] == True: #If there was an EnPassant capture, put a pawn on the appropriate square
-      color = self.matrix[move[0]][move[1]].color
-      self.matrix[move[0]][move[3]] = Pawn(-1*color,move[0],move[3])
+      if move[5] == True: #If there was an EnPassant capture, put a pawn on the appropriate square
+        color = self.matrix[move[0]][move[1]].color
+        self.matrix[move[0]][move[3]] = Pawn(-1*color,move[0],move[3])
 
 
   def clear(self):
