@@ -136,29 +136,18 @@ class Board:
 
     return False  # no checks have been found.
 
- def JSONify(self):
-    def stringify_piece(piece):
-      st = ""
-      if piece == 0:
-          st += "Null,"
-      else:
-        st +="{"
-        st += f"name: {str(piece)}\n"
-        st += f"type: {piece.typee}\n"
-        color = ("white","black")[piece.color == -1]
-        st += f"piece_color: {color}\n"
-        st += f"pos_row {piece.row}\n"
-        st += f"pos_col {piece.column}\n"
-        st += "},"
-      return st
+def objectify(self):
+  def objectify_piece(piece):
+    if piece == 0:
+      results = None
+    else:
+      results = {}
+      results['name']=str(piece)
+      results['type']=piece.typee
+      results['piece_color']=('white', 'black')[piece.color == -1]
+      results['pos_row']=piece.row
+      results['pos_col']=piece.column
+    return results
 
-    s= "["
-    for i in range (8):
-      s+="["
-      for j in range (8):
-        s+=stringify_piece(self.matrix[i][j])
-      s = s[:-1]
-      s+="],"
-    s=s[:-1]
-    s+="]"
-    return s
+  results = [[objectify_piece(self.matrix[i][j]) for j in range(8)] for i in range(8)]
+  return results
