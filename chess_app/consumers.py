@@ -12,7 +12,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
   ## Runs when a user has connected to the game server
   async def connect(self):
     self.room_name = self.scope['url_route']['kwargs']['room_name']
-    self.room_group_name = 'chat_%s' % self.room_name
+    self.room_group_name = 'chess_%s' % self.room_name
 
     # Join room group
     await self.channel_layer.group_add(
@@ -50,7 +50,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
   async def create_game(self):
     self.gameBoard = Board()
-    print(self.gameBoard.objectify())
+    print(self.gameBoard)
 
 
 
