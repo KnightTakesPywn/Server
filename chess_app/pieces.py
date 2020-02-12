@@ -40,10 +40,10 @@ class Piece:
 
       if isinstance(self,King) and column-self.column==2: # when true, player is attempting to castle kingside
         board_obj.moves+= [("0-0", row, self.color)]
-        legal_move = not board_obj._is_check(King(self.color,self.row,self.column+1)) and not board_obj._is_check(King(self.color,self.row,self.column))  # Castling rules are convoluted.  Can't castle if your king is in check, if it would put you in check, or even if the square your king jumps over would BE a check if your king stopped on it.
+        legal_move = not board_obj._is_check(TKingForCastling(self.color,self.row,self.column+1)) and not board_obj._is_check(TKingForCastling(self.color,self.row,self.column))  # Castling rules are convoluted.  Can't castle if your king is in check, if it would put you in check, or even if the square your king jumps over would BE a check if your king stopped on it.
       elif isinstance(self,King) and column-self.column==-2: # Queenside castling is handled in a similar fashion.
         board_obj.moves +=[("0-0-0", row, self.color)]
-        legal_move = not board_obj._is_check(King(self.color,self.row,self.column-1)) and not board_obj._is_check(King(self.color,self.row,self.column))
+        legal_move = not board_obj._is_check(TKingForCastling(self.color,self.row,self.column-1)) and not board_obj._is_check(TKingForCastling(self.color,self.row,self.column))
       else:
         board_obj.moves+=[(self.row,self.column,row,column,board[row][column],EP)]  ##  If not a castling, append to list of moves in usual fashion
 
@@ -186,3 +186,9 @@ class King(Piece):
       board[rook.row][rook.column]=0
       board[row][column-direction]=rook
     return legal_move
+
+class TKingForCastling(Piece):
+  def __init__(self,color,row,column):
+    self.color=color
+    self.row=row
+    self.column=column
