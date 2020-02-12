@@ -80,13 +80,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
   ###############################
 
   async def handle_move(self, data):
-    valid_move = self.gameBoard.move(data.start,data.end)
+    print('Print data: ', data)
+    valid_move = self.gameBoard.move(data['start'],data['end'])
     if valid_move:
       await self.channel_layer.group_send(
         self.room_group_name,
         {
-          "type": 'update_board'
-          "board": self.gameBoard
+          "type": 'update_board',
+          "board": self.gameBoard,
         }
       )
 

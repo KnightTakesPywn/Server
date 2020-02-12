@@ -73,8 +73,10 @@ class Board:
     """blanks the board.   Mostly for testing purposes, but could also be used for a potential future setup-board feature"""
     self.matrix = [[0 for j in range (8)] for i in range (8)]
 
-  def move (self, r1,c1,r2,c2):
+  def move (self, r1,c1,r2=None,c2=None):
     """moves a piece from r1,c1 to r2,c2.  Modifies board matrix and player to move appropriately, and returns True if a legal move was successfully made"""
+    if r2 == None:
+      r1, c1, r2, c2 = r1[0], r1[1], c1[0], c1[1]
     piece = self.matrix[r1][c1]
     if piece == 0 or piece.color != self.player_to_move:
       return False
@@ -148,7 +150,7 @@ class Board:
         results = {}
         results['name']=str(piece)
         results['type']=piece.typee
-        results['piece_color']=('white', 'black')[piece.color == -1]
+        results['color']=('white', 'black')[piece.color == -1]
         results['pos_row']=piece.row
         results['pos_col']=piece.column
       return results
