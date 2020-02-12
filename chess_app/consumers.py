@@ -4,6 +4,12 @@ import json
 from .board import Board
 
 class ChatConsumer(AsyncWebsocketConsumer):
+
+###################################
+## Run When a Connection is Made ##
+###################################
+
+  ## Runs when a user has connected to the game server
   async def connect(self):
     self.room_name = self.scope['url_route']['kwargs']['room_name']
     self.room_group_name = 'chat_%s' % self.room_name
@@ -16,19 +22,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     await self.accept()
 
-    await self.start_game()
-
-
-  async def start_game(self):
-    json_data = open('SampleData/startingBoard.json')
-    data = json.load(json_data)
-    self.board = data['data']
+    ## Create the game instance for this user
     await self.create_game()
 
-  async def create_game(self):
-    self.gameBoard = Board()
-    print(self.gameBoard)
+    # Have all users update their game state. *Mainly for the
+    await self.channel_layer.group_send(
+      self.room_group_name,
+      {
+        'type': 'send_board'
+      }
+    )
 
+##########################
+## User Leaves the Room ##
+##########################
 
   async def disconnect(self, close_code):
     # Leave room group
@@ -37,6 +44,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
       self.channel_name
     )
 
+####################
+## Helper Methods ##
+####################
+
+  async def create_game(self):
+    self.gameBoard = Board()
+    print(self.gameBoard.objectify())
+
+#################################
+## Message Receive From Client ##
+#################################
 
   # Receive message from WebSocket
   async def receive(self, text_data):
@@ -46,8 +64,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
       await self.start_game()
 
     if data['type'] == 'move':
-      #Handle Move
-      pass
+      self.handle_move(data)
 
     await self.channel_layer.group_send(
       self.room_group_name,
@@ -56,6 +73,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
       }
     )
 
+###############################
+## Different Receive Actions ##
+###############################
+
+  async def handle_move(self, data):
+    pass
+# await self.channel_layer.group_send(
+#     self.room_group_name,
+#     {
+#       'type': 'send_board'
+#     }
+#   )
+
+
+####################################
+## Different Server Message Sends ##
+####################################
 
   # Receive message from room group
   async def send_board(self, event):
@@ -63,5 +97,5 @@ class ChatConsumer(AsyncWebsocketConsumer):
       'type':'gameState',
 
       'turn':'white', # self.board.get_turn()
-      'board':self.board # self.board.objectify()
+      'board':self.gameBoard.objectify() # self.board.objectify()
     }))

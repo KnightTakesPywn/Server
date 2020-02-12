@@ -1,4 +1,8 @@
-from pieces import *
+import sys, os
+myPath = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, myPath + '/./')
+
+from pieces import Rook,Knight,Bishop,Queen,King,Pawn
 
 class Board:
   def __init__(self):
@@ -136,18 +140,18 @@ class Board:
 
     return False  # no checks have been found.
 
-def objectify(self):
-  def objectify_piece(piece):
-    if piece == 0:
-      results = None
-    else:
-      results = {}
-      results['name']=str(piece)
-      results['type']=piece.typee
-      results['piece_color']=('white', 'black')[piece.color == -1]
-      results['pos_row']=piece.row
-      results['pos_col']=piece.column
-    return results
+  def objectify(self):
+    def objectify_piece(piece):
+      if piece == 0:
+        results = None
+      else:
+        results = {}
+        results['name']=str(piece)
+        results['type']=piece.typee
+        results['piece_color']=('white', 'black')[piece.color == -1]
+        results['pos_row']=piece.row
+        results['pos_col']=piece.column
+      return results
 
-  results = [[objectify_piece(self.matrix[i][j]) for j in range(8)] for i in range(8)]
-  return results
+    results = [[objectify_piece(self.matrix[i][j]) for j in range(8)] for i in range(8)]
+    return results
