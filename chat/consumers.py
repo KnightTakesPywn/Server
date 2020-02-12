@@ -18,6 +18,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
     self.username = {}
     self.users = []
 
+    print(self.scope)
+
     # Join room group
     await self.channel_layer.group_add(
       self.room_group_name,
