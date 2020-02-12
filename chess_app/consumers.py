@@ -52,6 +52,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
     self.gameBoard = Board()
     print(self.gameBoard.objectify())
 
+
+
 #################################
 ## Message Receive From Client ##
 #################################
@@ -64,7 +66,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
       await self.start_game()
 
     if data['type'] == 'move':
-      self.handle_move(data)
+      await self.handle_move(data)
 
     await self.channel_layer.group_send(
       self.room_group_name,
@@ -78,13 +80,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
 ###############################
 
   async def handle_move(self, data):
-    pass
-# await self.channel_layer.group_send(
-#     self.room_group_name,
-#     {
-#       'type': 'send_board'
-#     }
-#   )
+    valid_move = self.gameBoard.move(data.start,data.end)
+    if valid_move:
+      await self.channel_layer.group_send(
+        self.room_group_name,
+        {
+          "type": 'send_board'
+        }
+      )
+
 
 
 ####################################
