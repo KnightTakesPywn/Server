@@ -14,6 +14,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     await self.accept()
 
+    self.board = {}
+
+
+  async def start_game(self):
+    json_data = open('SampleData/startingBoard.json')
+    data = json.load(json_data)
+    self.board = data['data']
+
+
   async def disconnect(self, close_code):
     # Leave room group
     await self.channel_layer.group_discard(
@@ -21,10 +30,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
       self.channel_name
     )
 
+
   # Receive message from WebSocket
   async def receive(self, text_data):
-    pass
+    await self.start_game()
+    await self.channel_layer.group_send(
+      self.room_group_name,
+      {
+        'type': 'send_board'
+      }
+    )
+
 
   # Receive message from room group
-  async def chat_message(self, event):
-    pass
+  async def send_board(self, event):
+    await self.send(text_data=json.dumps({
+      'gameState': {
+        'turn':'white',
+        'board':self.board
+        },
+    }))

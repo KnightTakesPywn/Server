@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
   ## Test Channel Apps
   'chat',
+  'chess_app',
 
   'django.contrib.admin',
   'django.contrib.auth',
@@ -52,9 +53,6 @@ INSTALLED_APPS = [
   'django.contrib.messages',
   'django.contrib.staticfiles',
 
-
-  ## Local
-  'chess_app.apps.ChessAppConfig',
 ]
 
 MIDDLEWARE = [
