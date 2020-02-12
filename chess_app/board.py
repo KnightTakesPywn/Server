@@ -1,6 +1,3 @@
-import sys, os
-myPath = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, myPath + '/./')
 from pieces import *
 
 class Board:
@@ -138,3 +135,30 @@ class Board:
             return True
 
     return False  # no checks have been found.
+
+ def JSONify(self):
+    def stringify_piece(piece):
+      st = ""
+      if piece == 0:
+          st += "Null,"
+      else:
+        st +="{"
+        st += f"name: {str(piece)}\n"
+        st += f"type: {piece.typee}\n"
+        color = ("white","black")[piece.color == -1]
+        st += f"piece_color: {color}\n"
+        st += f"pos_row {piece.row}\n"
+        st += f"pos_col {piece.column}\n"
+        st += "},"
+      return st
+
+    s= "["
+    for i in range (8):
+      s+="["
+      for j in range (8):
+        s+=stringify_piece(self.matrix[i][j])
+      s = s[:-1]
+      s+="],"
+    s=s[:-1]
+    s+="]"
+    return s
