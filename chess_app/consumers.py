@@ -49,8 +49,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
   # Receive message from room group
   async def send_board(self, event):
     await self.send(text_data=json.dumps({
-      'gameState': {
-        'turn':'white',
-        'board':self.board
-        },
+      'type':'gameState',
+      'turn':'white',
+      'board':self.board
     }))
