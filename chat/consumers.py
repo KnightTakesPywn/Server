@@ -15,7 +15,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Save all messages that have been seen while in the room
     self.chatHistory = []
-    self.userInfo = {}
+    self.username = {}
+    self.users = []
 
     # Join room group
     await self.channel_layer.group_add(
@@ -37,6 +38,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
       self.channel_name
     )
 
+
   ####################################
   ## Revive Info From The Front End ##
   ####################################
@@ -52,6 +54,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     elif text_data_json['type'] == 'newUser':
       await self.new_user(text_data_json)
 
+
   ###############################
   ## Different Receive Actions ##
   ###############################
@@ -59,9 +62,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
   # User entered a new message
   async def receive_message(self, text_data):
     message = text_data['message']
-    user = text_data['user']
 
-    message =  user + ': ' + message
+    message =  self.username + ': ' + message
     # Send message to room group
     await self.channel_layer.group_send(
       self.room_group_name,
@@ -71,14 +73,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
       }
     )
 
+
   # New user connected to the server
   async def new_user(self, text_data):
     user = text_data['user']
     print(f'{user} Connected')
+    self.username = user
+    await self.channel_layer.group_send(
+      self.room_group_name,
+      {
+        'type': 'add_user',
+        'username': user
+      }
+    )
 
-  ############################
-  ## Different Send Actions ##
-  ############################
+
+  ###################################
+  ## Different Server Wide Actions ##
+  ###################################
 
   # Receive message from room group
   async def chat_message(self, event):
@@ -88,5 +100,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Send message to WebSocket
     await self.send(text_data=json.dumps({
       'message': message,
-      'history': self.chatHistory
+      'history': self.chatHistory,
+      'users': self.users
     }))
+
+
+  async def add_user (self, event):
+    username = event['username']
+    self.users.append(username)

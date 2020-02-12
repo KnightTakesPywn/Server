@@ -137,7 +137,7 @@ class Rook(Piece):
       self.moved = True
     return legal_move
 
-class  Bishop(Piece):
+class Bishop(Piece):
   def __init__ (self, color, row, column, board_obj):
     super().__init__(color,4,row,column,board_obj)
 

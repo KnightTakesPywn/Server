@@ -12,6 +12,7 @@ django-environ = "*"
 channels = "*"
 channels-redis = "*"
 selenium = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.6"

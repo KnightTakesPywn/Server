@@ -1,4 +1,8 @@
-from pieces import *
+import sys, os
+myPath = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, myPath + '/./')
+
+from pieces import Rook,Knight,Bishop,Queen,King,Pawn
 
 class Board:
   def __init__(self):
