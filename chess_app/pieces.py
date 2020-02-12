@@ -1,7 +1,8 @@
 class Piece:
-  def __init__(self,color, val, row,column, board_obj):
+  def __init__(self,color, val, typee, row,column, board_obj):
     """White pieces have a color of 1, black have a color of -1.  Val of 1 for pawn, 3 for knight, 4 for bishop, 5 for rook, 8 for king and 9 for queen.   Row and Column are the piece's position in the board matrix (bottom left being 7,0)"""
     self.val = val
+    self.typee = typee
     self.color = color
     self.row=row
     self.column=column
@@ -10,12 +11,12 @@ class Piece:
 
   def __str__(self):
     s=("w", "b")[self.color is not 1]
-    if self.val ==1 : s+= "P"
-    if self.val ==3 : s+= "N"
-    if self.val ==4 : s += "B"
-    if self.val ==5 : s += "R"
-    if self.val ==8 : s += "K"
-    if self.val ==9 : s += "Q"
+    if self.val ==1 : s+= "p"
+    if self.val ==3 : s+= "n"
+    if self.val ==4 : s += "b"
+    if self.val ==5 : s += "r"
+    if self.val ==8 : s += "k"
+    if self.val ==9 : s += "q"
     return s
 
   def move(self,row,column,board_obj):
@@ -40,10 +41,11 @@ class Piece:
 
       if isinstance(self,King) and column-self.column==2: # when true, player is attempting to castle kingside
         board_obj.moves+= [("0-0", row, self.color)]
-        legal_move = not board_obj._is_check(TKingForCastling(self.color,self.row,self.column+1)) and not board_obj._is_check(TKingForCastling(self.color,self.row,self.column))  # Castling rules are convoluted.  Can't castle if your king is in check, if it would put you in check, or even if the square your king jumps over would BE a check if your king stopped on it.
+        
+        legal_move = not board_obj._is_check(TestKingForCastling(self.color,self.row,self.column+1)) and not board_obj._is_check(TestKingForCastling(self.color,self.row,self.column))  # Castling rules are convoluted.  Can't castle if your king is in check, if it would put you in check, or even if the square your king jumps over would BE a check if your king stopped on it.
       elif isinstance(self,King) and column-self.column==-2: # Queenside castling is handled in a similar fashion.
         board_obj.moves +=[("0-0-0", row, self.color)]
-        legal_move = not board_obj._is_check(TKingForCastling(self.color,self.row,self.column-1)) and not board_obj._is_check(TKingForCastling(self.color,self.row,self.column))
+        legal_move = not board_obj._is_check(TestKingForCastling(self.color,self.row,self.column-1)) and not board_obj._is_check(TestKingForCastling(self.color,self.row,self.column))
       else:
         board_obj.moves+=[(self.row,self.column,row,column,board[row][column],EP)]  ##  If not a castling, append to list of moves in usual fashion
 
@@ -95,7 +97,7 @@ class Piece:
 
 class Pawn(Piece):
   def __init__ (self, color, row, column, board_obj):
-    super().__init__(color,1,row,column,board_obj)
+    super().__init__(color,1, "pawn",row,column,board_obj)
 
   def _move(self,row,column, board):
     legal_move = False
@@ -114,7 +116,7 @@ class Pawn(Piece):
 
 class Knight(Piece):
   def __init__ (self, color, row, column, board_obj):
-    super().__init__(color,3,row,column,board_obj)
+    super().__init__(color,3,"knight",row,column,board_obj)
 
   def _move(self,row,column,board):
     legal_move = False
@@ -125,7 +127,7 @@ class Knight(Piece):
 
 class Rook(Piece):
   def __init__ (self, color, row, column, board_obj):
-    super().__init__(color,5,row,column,board_obj)
+    super().__init__(color,5, "rook",row,column,board_obj)
     self.moved = False
 
   def _move(self,row,column,board):
@@ -139,7 +141,7 @@ class Rook(Piece):
 
 class  Bishop(Piece):
   def __init__ (self, color, row, column, board_obj):
-    super().__init__(color,4,row,column,board_obj)
+    super().__init__(color,4, "bishop",row,column,board_obj)
 
   def _move(self,row,column,board):
     legal_move=False
@@ -150,7 +152,7 @@ class  Bishop(Piece):
 
 class Queen(Piece):
   def __init__(self,color,row,column,board_obj):
-    super().__init__(color,9,row,column,board_obj)
+    super().__init__(color,9,"queen",row,column,board_obj)
 
   def _move(self,row,column,board):  ##copy-paste of logic for rook and Bishop
     legal_move=False
@@ -165,7 +167,7 @@ class Queen(Piece):
 
 class King(Piece):
   def __init__(self,color,row,column,board_obj):
-    super().__init__(color,8,row,column,board_obj)
+    super().__init__(color,8,"king",row,column,board_obj)
     self.moved = False
 
   def _move(self,row,column,board):
@@ -187,7 +189,7 @@ class King(Piece):
       board[row][column-direction]=rook
     return legal_move
 
-class TKingForCastling(Piece):
+class TestKingForCastling():
   def __init__(self,color,row,column):
     self.color=color
     self.row=row
