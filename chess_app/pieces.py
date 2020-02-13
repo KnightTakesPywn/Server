@@ -202,6 +202,7 @@ class King(Piece):
         ## move the Rook
         board[rook.row][rook.column]=0
         board[row][column-direction]=rook
+        rook.column=column-direction
     if legal_move:
       board_obj.can_castle[tup[index]]=False
       board_obj.can_castle[tup[index+1]]=False
