@@ -346,7 +346,6 @@ def test_valid_pawn_moves(board):
       r1, c1 = squares[i-1][0],  squares[i-1][1]
       r2, c2 = squares[i][0],  squares[i][1]
       board.move(r1,c1,r2,c2)
-      print (r2,c2)
       assert isinstance(b[r2][c2],Pawn)
       assert 0 == b[r1][c1]
 
@@ -421,32 +420,31 @@ def test_castling_illegal(board):
   board.move(7,4,7,6)
   assert b[7][6]==0
 
-
-  board.move(7,4,7,5)
-  board.player_to_move=1
-  board.move(7,5,7,4)
-  board.player_to_move=1
-  board.move(7,4,7,6)
-  assert b[7][6]==0
-
-  b[7][4].moved=False
   board.move(7,7,5,7)
   board.player_to_move=1
   board.move(5,7,7,7)
   board.player_to_move=1
   assert b[7][6]==0
 
+  b[7][4].moved=False
+  board.move(7,4,7,5)
+  board.player_to_move=1
+  board.move(7,5,7,4)
+  board.player_to_mve=1
+  board.move(7,4,7,6)
+  assert b[7][6]==0
+
 def test_undo_move():
   board=Board()
   b=board.matrix
 
-  board.move(6,4,4,4)
-  board.move(1,4,3,4)
-  board.move(7,6,5,5)
-  board.move(0,1,2,2)
-  board.move(7,5,4,2)
-  board.move(0,6,2,5)
-  board.move(7,4,7,6)
+  board.move(6,4,4,4) #w
+  board.move(1,4,3,4) #b
+  board.move(7,6,5,5) #w
+  board.move(0,1,2,2) #b
+  board.move(7,5,4,2) #w
+  board.move(0,6,2,5) #b
+  board.move(7,4,7,6) #w
 
   assert board.player_to_move == -1
   board.undo_move()
