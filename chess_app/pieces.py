@@ -21,33 +21,22 @@ class Piece:
 
   def move(self,row,column,board_obj):
     """ Default move function for all pieces."""
+
     board = board_obj.matrix
     legal_move = self._move(row,column,board_obj) # Does the move inputted comply with the piece's _move function?
-
-    ## Logic for en-passant was initially handled here because the board object iteself was out of scope in the pawn's move function.  This should be refactored into the pawn's move function, but lack of time prevented it.
-    EP = False
     if legal_move:
-      if isinstance(self,Pawn) and abs (column-self.column)==1 and board[row][column] == 0: # Pawn is attempting to capture a piece
-        legal_move = board[row][column] != 0  # Returns true in the event of a regular capture
-        if not legal_move:  #  Handling for an en-passant capture
-          if self.color==1:
-            i = -1
-          else:
-            i =1
-          legal_move = board_obj.moves[-1]=(row+i,column,row-i,column,0,False)
-          if legal_move:
-            board[row-i][column]=0
-            EP = True ##  EP is added later ot board_obj.moves to make undoing an EP capture possible.
-
       if isinstance(self,King) and column-self.column==2: # when true, player is attempting to castle kingside
-        board_obj.moves+= [("0-0", row, self.color)]
+        # board_obj.moves+= [("0-0", row, self.color)]
+        board_obj.moves+=[(0,row,self.color,0,0,False,"0-0")]
 
         legal_move = not board_obj._is_check(TestKingForCastling(self.color,self.row,self.column+1)) and not board_obj._is_check(TestKingForCastling(self.color,self.row,self.column))  # Castling rules are convoluted.  Can't castle if your king is in check, if it would put you in check, or even if the square your king jumps over would BE a check if your king stopped on it.
       elif isinstance(self,King) and column-self.column==-2: # Queenside castling is handled in a similar fashion.
-        board_obj.moves +=[("0-0-0", row, self.color)]
+        # board_obj.moves +=[("0-0-0", row, self.color)]
+        board_obj.moves +=[(0,row,self.color,0,0,False,"0-0-0")]
+
         legal_move = not board_obj._is_check(TestKingForCastling(self.color,self.row,self.column-1)) and not board_obj._is_check(TestKingForCastling(self.color,self.row,self.column))
       else:
-        board_obj.moves+=[(self.row,self.column,row,column,board[row][column],EP)]  ##  If not a castling, append to list of moves in usual fashion
+        board_obj.moves+=[(self.row,self.column,row,column,board[row][column],board_obj.EP,"_")]  ##  If not a castling, append to list of moves in usual fashion
 
       piece = self
       if isinstance(self,Pawn):  #this block of code handles pawn promotion.   At the moment pawns auto-promote to queens.  At some point this should be updated to give the user a choice of pieces to promote to.
@@ -72,7 +61,8 @@ class Piece:
 
       if not legal_move:
         board_obj.undo_move()
-        return False
+        legal_move = False
+    board_obj.EP=False
     return legal_move
 
 
@@ -112,7 +102,18 @@ class Pawn(Piece):
 
     if abs(column - self.column) == 1 and rows_moved == self.color:  # capture attempted
       if self._ok_destination_square(board[row][column]):
-        legal_move=True  #  Further handling for captures done in the piece.move function
+        if board[row][column] != 0: #enemy piece on the square
+          legal_move=True
+        else:
+          if board_obj.moves:
+            move=board_obj.moves[-1]
+            rows_advanced=abs(move[0]-move[2])
+            cols_over = abs(column-self.column)
+            correct_row=(3,4)[self.color==-1]
+            if rows_advanced==2 and cols_over==1 and self.row==correct_row:
+              board_obj.EP = True
+              legal_move=True
+              board[self.row][column]=0
     return legal_move
 
 class Knight(Piece):

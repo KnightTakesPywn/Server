@@ -22,6 +22,7 @@ class Board:
           row2 = 0
         self.matrix[row1][i] = Pawn(color,row1,i,self)
         self.matrix[row2][i] = pieces[i](color,row2,i,self)
+    self.EP=False
     self.white_king=self.matrix[7][4]
     self.black_king=self.matrix[0][4]
     self.can_castle = {"w00":True,"b00":True,"w000":True,"b000":True} ##  00 and 000 are chess shorthand for castling kingside and queenside, respectively
@@ -48,10 +49,10 @@ class Board:
   def undo_move(self):
     self.player_to_move *= -1
     move = self.moves.pop()
-    if move[0] == "0-0" or move[0]== "0-0-0":  ##  Undoing castling requires a good deal of special logic
+    if move[6] == "0-0" or move[6]== "0-0-0":  ##  Undoing castling requires a good deal of special logic
       row = move[1]
       color = move[2]
-      if move[0] == "0-0": #kingside
+      if move[6] == "0-0": #kingside
         squares = (King(color,row,4,self),0,0,Rook(color,row,7,self))
         def col_func (j): ## a quick helper function to grab the appropriate columns on the matrix
           return 4+j
@@ -174,6 +175,7 @@ class Board:
 
 def unpack(packed_board):
   board = Board()
+  board.clear()
   board.moves = eval(packed_board["moves"])
   board.can_castle = eval(packed_board["can_castle"])
   b = packed_board["board"]
