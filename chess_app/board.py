@@ -83,6 +83,7 @@ class Board:
     if piece == 0 or piece.color != self.player_to_move:
       return False
     moved = self.matrix[r1][c1].move(r2,c2,self)
+    print('move',self)
     if moved:
       self.player_to_move *= -1
       return True
