@@ -24,6 +24,8 @@ class Board:
         self.matrix[row2][i] = pieces[i](color,row2,i,self)
     self.white_king=self.matrix[7][4]
     self.black_king=self.matrix[0][4]
+    self.can_castle = {"w00":True,"b00":True,"w000":True,"b000":True} ##  00 and 000 are chess shorthand for castling kingside and queenside, respectively
+
 
   def __repr__(self):
     s = ""
@@ -88,6 +90,7 @@ class Board:
 
   def _is_check(self,king):
     """returns true if the king is in check, and false if it isn't"""
+    results = False
     def in_bounds(row,column):  ##  A quick helper function to avoid index out of bounds errors
       return -1<row<8 and -1<column<8
     direction = (0,0)
@@ -105,12 +108,12 @@ class Board:
               piece = self.matrix[r][c]
               if j < 4:  ## our first 4 unit vectors look for rook moves
                 if isinstance(piece,Rook) or isinstance(piece,Queen):
-                  return True
+                  results = True
                 else:
                   break
               else:  ## our last 4 unit vectors look for bishop moves.
                 if isinstance(piece,Bishop) or isinstance(piece,Queen):
-                  return True
+                  results = True
                 else:
                   break
             else:
@@ -123,14 +126,14 @@ class Board:
       if in_bounds(king.row+x,king.column+y):
         piece = self.matrix[king.row+x][king.column+y]
         if isinstance(piece,Knight) and piece.color != king.color:
-          return True
+          results = True
 
     ##looking for pawn checks
     for i in range (2):
       if in_bounds(king.row-king.color,king.column + 2*i -1):
         piece = self.matrix[king.row-king.color][king.column + 2*i -1]
         if isinstance(piece,Pawn) and piece.color != king.color:
-          return True
+          results = True
 
     ##looking for illegal king checks
     for i in range (-1,2):
@@ -138,9 +141,10 @@ class Board:
         if in_bounds(king.row+i,king.column+j):
           piece = self.matrix[king.row+i][king.column+j]
           if isinstance(piece,King) and piece.color != king.color:
-            return True
-
-    return False  # no checks have been found.
+            results = True
+    if results == True:
+      self.player_to_move *= -1
+    return results  # no checks have been found.
 
   def objectify(self):
     def objectify_piece(piece):
@@ -164,10 +168,14 @@ class Board:
     results = {}
     results["board"]=self.objectify()
     results["player_to_move"]=self.player_to_move
+    results["moves"]=str(self.moves)
+    results["can_castle"]=str(self.can_castle)
     return results
 
 def unpack(packed_board):
   board = Board()
+  board.moves = eval(packed_board["moves"])
+  board.can_castle = eval(packed_board["can_castle"])
   b = packed_board["board"]
   board.player_to_move = packed_board['player_to_move']
   m = board.matrix
