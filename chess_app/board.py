@@ -157,3 +157,43 @@ class Board:
 
     results = [[objectify_piece(self.matrix[i][j]) for j in range(8)] for i in range(8)]
     return results
+
+
+
+  def pack(self):
+    results = {}
+    results["board"]=self.objectify()
+    results["player_to_move"]=self.player_to_move
+    return results
+
+def unpack(packed_board):
+  board = Board()
+  b = packed_board["board"]
+  board.player_to_move = packed_board["player_to_move"]
+  m = board.matrix
+  for i in range (8):
+    for j in range (8):
+      square = b[i][j]
+      if square==None:
+        m[i][j]=0
+      else:
+        color=[square["color"]=="black"]
+        row=square["pos_row"]
+        column=square["pos_col"]
+        if square["type"]=="rook":
+          Rook(color,row,column,board)
+        elif square["type"]=="knight":
+          Knight(color,row,column,board)
+        elif square["type"]=="bishop":
+          Bishop(color,row,column,board)
+        elif square["type"]=="queen":
+          Queen(color,row,column,board)
+        elif square["type"]=="pawn":
+          Pawn(color,row,column,board)
+        elif square["type"]=="king":
+          kk=King(color,row,column,board)
+          if color == 1:
+            board.white_king=kk
+          else:
+            board.black_king=kk
+  return board
