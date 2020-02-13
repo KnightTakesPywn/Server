@@ -169,7 +169,7 @@ class Board:
 def unpack(packed_board):
   board = Board()
   b = packed_board["board"]
-  board.player_to_move = packed_board["player_to_move"]
+  board.player_to_move = packed_board['player_to_move']
   m = board.matrix
   for i in range (8):
     for j in range (8):

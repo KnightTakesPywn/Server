@@ -1,7 +1,7 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 
-from .board import Board
+from .board import Board,unpack
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
@@ -86,7 +86,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_group_name,
         {
           "type": 'update_board',
-          "board": self.gameBoard.objectify(),
+          "board": self.gameBoard.pack(),
         }
       )
 
@@ -109,6 +109,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
   ####################################
 
   async def update_board(self,event):
-    print("Call Event", event['board'])
-    # self.gameBoard = event['board']
-    self.send_board(event)
+    updated_board = event['board']
+    self.gameBoard = unpack(updated_board)
+    turn = ("white","black")[self.gameBoard.player_to_move==-1]
+    await self.send(text_data=json.dumps({
+      'type':'gameState',
+      'turn': turn,
+      'board':self.gameBoard.objectify()
+    }))
