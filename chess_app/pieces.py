@@ -26,17 +26,18 @@ class Piece:
     legal_move = self._move(row,column,board_obj) # Does the move inputted comply with the piece's _move function?
     if legal_move:
       if isinstance(self,King) and column-self.column==2: # when true, player is attempting to castle kingside
-        # board_obj.moves+= [("0-0", row, self.color)]
         board_obj.moves+=[(0,row,self.color,0,0,False,"0-0")]
 
         legal_move = not board_obj._is_check(TestKingForCastling(self.color,self.row,self.column+1)) and not board_obj._is_check(TestKingForCastling(self.color,self.row,self.column))  # Castling rules are convoluted.  Can't castle if your king is in check, if it would put you in check, or even if the square your king jumps over would BE a check if your king stopped on it.
       elif isinstance(self,King) and column-self.column==-2: # Queenside castling is handled in a similar fashion.
-        # board_obj.moves +=[("0-0-0", row, self.color)]
         board_obj.moves +=[(0,row,self.color,0,0,False,"0-0-0")]
 
         legal_move = not board_obj._is_check(TestKingForCastling(self.color,self.row,self.column-1)) and not board_obj._is_check(TestKingForCastling(self.color,self.row,self.column))
       else:
-        board_obj.moves+=[(self.row,self.column,row,column,board[row][column],board_obj.EP,"_")]  ##  If not a castling, append to list of moves in usual fashion
+        cap = board[row][column]
+        if cap != 0:
+          cap = cap.val
+        board_obj.moves+=[(self.row,self.column,row,column,cap,board_obj.EP,"_")]  ##  If not a castling, append to list of moves in usual fashion
 
       piece = self
       if isinstance(self,Pawn):  #this block of code handles pawn promotion.   At the moment pawns auto-promote to queens.  At some point this should be updated to give the user a choice of pieces to promote to.
@@ -197,7 +198,6 @@ class King(Piece):
         lm2 = board[row][self.column+3*direction]
         index_modifier=1
       can_castle = board_obj.can_castle[tup[index+index_modifier]]
-      print (lm,lm1,lm2==0,can_castle)
       legal_move = lm and lm1 and lm2==0 and can_castle
       if legal_move:
         ## move the Rook
