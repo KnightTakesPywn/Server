@@ -82,12 +82,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
     user = text_data['user']
     print(f'{user} Connected')
     self.username = user
+    intro_message = f'{self.username} has entered the room...'
     await self.channel_layer.group_send(
       self.room_group_name,
       {
-        'type': 'add_user',
-        'username': user
-      }
+        'type': 'chat_message',
+        'message': intro_message
+      },
     )
 
 
