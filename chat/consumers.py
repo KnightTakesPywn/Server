@@ -1,5 +1,5 @@
 ## Credit to: https://channels.readthedocs.io/en/latest/tutorial/index.html
-
+from random import randint
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 
@@ -15,17 +15,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Save all messages that have been seen while in the room
     self.chatHistory = []
-    self.username = {}
-    self.users = []
 
-    print(self.scope)
-    print(self.room_name)
+    self.username = ''
+    self.id = randint(0, 1000000)
+    self.users = {}
 
     # Join room group
     await self.channel_layer.group_add(
       self.room_group_name,
       self.channel_name
     )
+    print('channel layer', self.channel_layer)
 
     await self.accept()
 
@@ -35,6 +35,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
   #################################
 
   async def disconnect(self, close_code):
+
+    await self.channel_layer.group_send(
+      self.room_group_name,
+      {
+        'type': 'remove_user',
+        'id': self.id
+      }
+    )
+
     # Leave room group
     await self.channel_layer.group_discard(
       self.room_group_name,
@@ -82,6 +91,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
     user = text_data['user']
     print(f'{user} Connected')
     self.username = user
+    self.scope["user"].username = self.username
+    saved = {'user':user, 'id':self.id}
+
+    await self.channel_layer.group_send(
+      self.room_group_name,
+      {
+        'type': 'add_user',
+        'user': saved
+      }
+
     intro_message = f'{self.username} has entered the room...'
     await self.channel_layer.group_send(
       self.room_group_name,
@@ -103,12 +122,37 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Send message to WebSocket
     await self.send(text_data=json.dumps({
+      'type': 'message',
       'message': message,
       'history': self.chatHistory,
-      'users': self.users
     }))
 
 
   async def add_user (self, event):
-    username = event['username']
-    self.users.append(username)
+    user = event['user']
+    self.users.update({user['id']: user['user']})
+    await self.channel_layer.group_send(
+      self.room_group_name,
+      {
+        'type': 'match_users',
+        'users': self.users
+      }
+    )
+
+
+  async def match_users (self, event):
+    if event['users'] != self.users:
+      self.users.update(event['users'])
+    await self.send_user_list()
+
+
+  async def remove_user (self, event):
+    self.users.pop(event['id'], None)
+    await self.send_user_list()
+
+  async def send_user_list (self):
+    users = [self.users[id_value] for id_value in self.users]
+    await self.send(text_data=json.dumps({
+      'type': 'userlist',
+      'users': users
+    }))
