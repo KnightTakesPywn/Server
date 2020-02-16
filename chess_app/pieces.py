@@ -10,7 +10,7 @@ class Piece:
 
 
   def __str__(self):
-    s=("w", "b")[self.color is not 1]
+    s=("w", "b")[self.color != 1]
     if self.val ==1 : s+= "p"
     if self.val ==3 : s+= "n"
     if self.val ==4 : s += "b"
@@ -21,33 +21,23 @@ class Piece:
 
   def move(self,row,column,board_obj):
     """ Default move function for all pieces."""
+
     board = board_obj.matrix
-    legal_move = self._move(row,column,board) # Does the move inputted comply with the piece's _move function?
-
-    ## Logic for en-passant is handled here because the board object iteself is out of scope in the pawn's move function
-    EP = False
+    legal_move = self._move(row,column,board_obj) # Does the move inputted comply with the piece's _move function?
     if legal_move:
-      if isinstance(self,Pawn) and abs (column-self.column)==1 and board[row][column] == 0: # Pawn is attempting to capture a piece
-        legal_move = board[row][column] != 0  # Returns true in the event of a regular capture
-        if not legal_move:  #  Handling for an en-passant capture
-          if self.color==1:
-            i = -1
-          else:
-            i =1
-          legal_move = board_obj.moves[-1]=(row+i,column,row-i,column,0,False)
-          if legal_move:
-            board[row-i][column]=0
-            EP = True ##  EP is added later ot board_obj.moves to make undoing an EP capture possible.
-
       if isinstance(self,King) and column-self.column==2: # when true, player is attempting to castle kingside
-        board_obj.moves+= [("0-0", row, self.color)]
+        board_obj.moves+=[(0,row,self.color,0,0,False,"0-0")]
 
         legal_move = not board_obj._is_check(TestKingForCastling(self.color,self.row,self.column+1)) and not board_obj._is_check(TestKingForCastling(self.color,self.row,self.column))  # Castling rules are convoluted.  Can't castle if your king is in check, if it would put you in check, or even if the square your king jumps over would BE a check if your king stopped on it.
       elif isinstance(self,King) and column-self.column==-2: # Queenside castling is handled in a similar fashion.
-        board_obj.moves +=[("0-0-0", row, self.color)]
+        board_obj.moves +=[(0,row,self.color,0,0,False,"0-0-0")]
+
         legal_move = not board_obj._is_check(TestKingForCastling(self.color,self.row,self.column-1)) and not board_obj._is_check(TestKingForCastling(self.color,self.row,self.column))
       else:
-        board_obj.moves+=[(self.row,self.column,row,column,board[row][column],EP)]  ##  If not a castling, append to list of moves in usual fashion
+        cap = board[row][column]
+        if cap != 0:
+          cap = cap.val
+        board_obj.moves+=[(self.row,self.column,row,column,cap,board_obj.EP,"_")]  ##  If not a castling, append to list of moves in usual fashion
 
       piece = self
       if isinstance(self,Pawn):  #this block of code handles pawn promotion.   At the moment pawns auto-promote to queens.  At some point this should be updated to give the user a choice of pieces to promote to.
@@ -72,7 +62,8 @@ class Piece:
 
       if not legal_move:
         board_obj.undo_move()
-        return False
+        legal_move = False
+    board_obj.EP=False
     return legal_move
 
 
@@ -91,7 +82,7 @@ class Piece:
     y_vector = 0 if c==column else int((column-c)/abs(column-c))
     while r+x_vector is not row or c + y_vector is not column:
       r, c = r + x_vector, c + y_vector
-      if board[r][c] is not 0:
+      if board[r][c] != 0:
         return False  ##  There's a piece on the board between where you are and the square you're trying to get to
     return True
 
@@ -99,7 +90,8 @@ class Pawn(Piece):
   def __init__ (self, color, row, column, board_obj):
     super().__init__(color,1, "pawn",row,column,board_obj)
 
-  def _move(self,row,column, board):
+  def _move(self,row,column, board_obj):
+    board=board_obj.matrix
     legal_move = False
     rows_moved = self.row - row
     if column - self.column == 0: #pawn is not moved sideways
@@ -111,14 +103,26 @@ class Pawn(Piece):
 
     if abs(column - self.column) == 1 and rows_moved == self.color:  # capture attempted
       if self._ok_destination_square(board[row][column]):
-        legal_move=True  #  Further handling for captures done in the piece.move function
+        if board[row][column] != 0: #enemy piece on the square
+          legal_move=True
+        else:
+          if board_obj.moves:
+            move=board_obj.moves[-1]
+            rows_advanced=abs(move[0]-move[2])
+            cols_over = abs(column-self.column)
+            correct_row=(3,4)[self.color==-1]
+            if rows_advanced==2 and cols_over==1 and self.row==correct_row:
+              board_obj.EP = True
+              legal_move=True
+              board[self.row][column]=0
     return legal_move
 
 class Knight(Piece):
   def __init__ (self, color, row, column, board_obj):
     super().__init__(color,3,"knight",row,column,board_obj)
 
-  def _move(self,row,column,board):
+  def _move(self,row,column,board_obj):
+    board=board_obj.matrix
     legal_move = False
     tup = (abs(self.row-row), abs(self.column - column))
     if tup == (2,1) or tup == (1,2):
@@ -128,22 +132,25 @@ class Knight(Piece):
 class Rook(Piece):
   def __init__ (self, color, row, column, board_obj):
     super().__init__(color,5, "rook",row,column,board_obj)
-    self.moved = False
 
-  def _move(self,row,column,board):
+  def _move(self,row,column,board_obj):
+    board=board_obj.matrix
     legal_move = False
     if (self.row-row or self.column-column) and not (self.row-row and self.column - column): #moving on a row or a column, but not both:
       if self.can_move(row,column,board):
         legal_move = self._ok_destination_square(board[row][column])
     if legal_move:
-      self.moved = True
+      tup = ("b000","b00","w000","w00")
+      index = int(2*self.row/7 + self.column/7)
+      board_obj.can_castle[tup[index]]=False
     return legal_move
 
 class  Bishop(Piece):
   def __init__ (self, color, row, column, board_obj):
     super().__init__(color,4, "bishop",row,column,board_obj)
 
-  def _move(self,row,column,board):
+  def _move(self,row,column,board_obj):
+    board=board_obj.matrix
     legal_move=False
     if abs(self.row-row) == abs(self.column-column):
       if self.can_move(row,column,board):
@@ -154,7 +161,8 @@ class Queen(Piece):
   def __init__(self,color,row,column,board_obj):
     super().__init__(color,9,"queen",row,column,board_obj)
 
-  def _move(self,row,column,board):  ##copy-paste of logic for rook and Bishop
+  def _move(self,row,column,board_obj):  ##copy-paste of logic for rook and Bishop
+    board=board_obj.matrix
     legal_move=False
     if abs(self.row-row) == abs(self.column-column):
       if self.can_move(row,column,board):
@@ -168,25 +176,37 @@ class Queen(Piece):
 class King(Piece):
   def __init__(self,color,row,column,board_obj):
     super().__init__(color,8,"king",row,column,board_obj)
-    self.moved = False
 
-  def _move(self,row,column,board):
+  def _move(self,row,column,board_obj):
+    board=board_obj.matrix
     legal_move=False
+    index = self.color+1
+    index_modifier=0
+    tup = ("b000","b00","w000","w00")
     if abs(self.row-row) <2 and abs(self.column-column) <2:
       legal_move = self._ok_destination_square(board[row][column])
 
     if self.row-row == 0 and abs (self.column - column) ==2: #castling attempted
       direction = int(0.5*(column-self.column))
-      rook=(board[row][7], board[row][0])[direction is -1]
+      rook=(board[row][7], board[row][0])[direction == -1]
       if not isinstance(rook, Rook) or rook.color is not self.color:
         return False  ## If there's not  rook where we expect one, then you can't castle
-      lm1 = board[row][column - direction] == 0
       lm = board[row][column] == 0
-      legal_move = lm1 and lm and not self.moved and not rook.moved
-
-      ## move the Rook
-      board[rook.row][rook.column]=0
-      board[row][column-direction]=rook
+      lm1 = board[row][column - direction] == 0
+      lm2 = 0
+      if direction == -1: #qside
+        lm2 = board[row][self.column+3*direction]
+        index_modifier=1
+      can_castle = board_obj.can_castle[tup[index+index_modifier]]
+      legal_move = lm and lm1 and lm2==0 and can_castle
+      if legal_move:
+        ## move the Rook
+        board[rook.row][rook.column]=0
+        board[row][column-direction]=rook
+        rook.column=column-direction
+    if legal_move:
+      board_obj.can_castle[tup[index]]=False
+      board_obj.can_castle[tup[index+1]]=False
     return legal_move
 
 class TestKingForCastling():

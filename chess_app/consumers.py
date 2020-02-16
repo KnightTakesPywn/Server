@@ -50,7 +50,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
   async def create_game(self):
     self.gameBoard = Board()
-    print(self.gameBoard)
 
 
 
